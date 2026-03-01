@@ -1,0 +1,472 @@
+{
+  "name": "ABOVE_INFLUENCE_MODEL_SWITCH",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "analyze-influence",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "dc569fb9-150b-455b-b145-db9178cf2d23",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        -80
+      ],
+      "webhookId": "={{ $env.N8N_WEBHOOK_ID }}"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/subscriptions",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "mine",
+              "value": "true"
+            },
+            {
+              "name": "part",
+              "value": "snippet"
+            },
+            {
+              "name": "maxResults",
+              "value": "50"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $node['Webhook'].json.body.accessToken }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "93c56db2-b4ff-4858-a98d-96dc06f80b53",
+      "name": "Generic_Fetch_YT",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -256,
+        -80
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/videos",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "myRating",
+              "value": "like"
+            },
+            {
+              "name": "part",
+              "value": "snippet"
+            },
+            {
+              "name": "maxResults",
+              "value": "50"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $node['Webhook'].json.body.accessToken }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3cc2b430-db2f-4888-ace7-5833ad76a969",
+      "name": "Fetch_Liked_Videos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -64,
+        -80
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ 'Analyze User Goals: ' + ($node['Webhook'].json.body.userGoals || 'None') + \n'\\n\\nSubscriptions (Latest 30): ' + ($node['Generic_Fetch_YT'].json.items?.slice(0, 30).map(i => i.snippet.title).join(', ') || 'None') + \n'\\n\\nRecent Likes (Latest 30): ' + ($node['Fetch_Liked_Videos'].json.items?.slice(0, 30).map(i => i.snippet.title).join(', ') || 'None') + \n'\\n\\nTo ensure performance and token limits, our team ABOVE_INFLUENCE is analyzing only a piece of your data (the latest 30 entries). \\n\\nYou are an AI assistant helping a user critically evaluate how these influencers shape their mindset and worldview. Compare aspirations (subs) vs reality (likes). For each, research or infer latest content themes, engagement tactics (fear, FOMO, parasocial bonding), and psychological influence. \\n\\nCRITICAL FORMATTING RULE: Do NOT use Markdown tables. Use bolded bulleted lists for all structured data.\\n\\n---\\n\\n## STEP 1: GOAL ALIGNMENT (0-100%)\\nEvaluate if this consumption supports their stated goals. Are they working or seeking dopamine?\\n\\n## STEP 2: INFLUENCE CATEGORY BREAKDOWN\\nCalculate estimated influence % across categories (Education, Finance, Entertainment, Self-Help, Tech, etc.). Must total 100%. Present as a bolded bulleted list.\\n\\n## STEP 3: PER-CHANNEL DEEP ANALYSIS\\nFor each channel, provide:\\n- **Channel Name:** \\n- **Primary Category:** \\n- **Influence Tactics:** e.g., fear-based, clickbait, FOMO, etc.\\n- **How they may be influencing the User:** spending, politics, anxiety, etc.\\n- **Risk Level:** 🟢 Low / 🟡 Moderate / 🔴 High\\n- **Unsubscribe Recommendation:** Yes / No + Reason.\\n\\n## STEP 4: TOP 10 HIGHEST INFLUENCE ACCOUNTS\\nList the Top 10 most influential sources. Include Rank, Name, Category, and why they have the highest pull.\\n\\n## STEP 5: USER PERSONA SUMMARY\\nDetailed persona summary based on the data:\\n- Estimated mindset themes and interests.\\n- Potential blind spots or echo chambers.\\n- What this says about current goals vs. anxieties.\\n- One honest, constructive recommendation to improve their content diet.\\n\\nBe direct, honest, and helpful.' }}"
+      },
+      "id": "02826c81-3d43-455d-88e7-f7f5646b8361",
+      "name": "Basic LLM Chain - Primary",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        112,
+        -80
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "id": "6f73b151-2189-4c4e-9b3b-5a42cf31b91a",
+      "name": "Gemini 2.5 Flash Lite",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        112,
+        128
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "={{ $env.GOOGLE_GEMINI_API_KEY }}",
+          "name": "Google Gemini API (from .env)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "error-check-1",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-error-1",
+      "name": "Check Error - Primary",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ 'Analyze User Goals: ' + ($node['Webhook'].json.body.userGoals || 'None') + \n'\\n\\nSubscriptions (Latest 30): ' + ($node['Generic_Fetch_YT'].json.items?.slice(0, 30).map(i => i.snippet.title).join(', ') || 'None') + \n'\\n\\nRecent Likes (Latest 30): ' + ($node['Fetch_Liked_Videos'].json.items?.slice(0, 30).map(i => i.snippet.title).join(', ') || 'None') + \n'\\n\\nTo ensure performance and token limits, our team ABOVE_INFLUENCE is analyzing only a piece of your data (the latest 30 entries). \\n\\nYou are an AI assistant helping a user critically evaluate how these influencers shape their mindset and worldview. Compare aspirations (subs) vs reality (likes). For each, research or infer latest content themes, engagement tactics (fear, FOMO, parasocial bonding), and psychological influence. \\n\\nCRITICAL FORMATTING RULE: Do NOT use Markdown tables. Use bolded bulleted lists for all structured data.\\n\\n---\\n\\n## STEP 1: GOAL ALIGNMENT (0-100%)\\nEvaluate if this consumption supports their stated goals. Are they working or seeking dopamine?\\n\\n## STEP 2: INFLUENCE CATEGORY BREAKDOWN\\nCalculate estimated influence % across categories (Education, Finance, Entertainment, Self-Help, Tech, etc.). Must total 100%. Present as a bolded bulleted list.\\n\\n## STEP 3: PER-CHANNEL DEEP ANALYSIS\\nFor each channel, provide:\\n- **Channel Name:** \\n- **Primary Category:** \\n- **Influence Tactics:** e.g., fear-based, clickbait, FOMO, etc.\\n- **How they may be influencing the User:** spending, politics, anxiety, etc.\\n- **Risk Level:** 🟢 Low / 🟡 Moderate / 🔴 High\\n- **Unsubscribe Recommendation:** Yes / No + Reason.\\n\\n## STEP 4: TOP 10 HIGHEST INFLUENCE ACCOUNTS\\nList the Top 10 most influential sources. Include Rank, Name, Category, and why they have the highest pull.\\n\\n## STEP 5: USER PERSONA SUMMARY\\nDetailed persona summary based on the data:\\n- Estimated mindset themes and interests.\\n- Potential blind spots or echo chambers.\\n- What this says about current goals vs. anxieties.\\n- One honest, constructive recommendation to improve their content diet.\\n\\nBe direct, honest, and helpful.' }}"
+      },
+      "id": "llm-chain-2",
+      "name": "Basic LLM Chain - Fallback 1",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        496,
+        80
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3-flash",
+        "options": {}
+      },
+      "id": "gemini-3-flash",
+      "name": "Gemini 3 Flash",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        496,
+        288
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "={{ $env.GOOGLE_GEMINI_API_KEY }}",
+          "name": "Google Gemini API (from .env)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "error-check-2",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-error-2",
+      "name": "Check Error - Fallback 1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        688,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ 'Analyze User Goals: ' + ($node['Webhook'].json.body.userGoals || 'None') + \n'\\n\\nSubscriptions (Latest 30): ' + ($node['Generic_Fetch_YT'].json.items?.slice(0, 30).map(i => i.snippet.title).join(', ') || 'None') + \n'\\n\\nRecent Likes (Latest 30): ' + ($node['Fetch_Liked_Videos'].json.items?.slice(0, 30).map(i => i.snippet.title).join(', ') || 'None') + \n'\\n\\nTo ensure performance and token limits, our team ABOVE_INFLUENCE is analyzing only a piece of your data (the latest 30 entries). \\n\\nYou are an AI assistant helping a user critically evaluate how these influencers shape their mindset and worldview. Compare aspirations (subs) vs reality (likes). For each, research or infer latest content themes, engagement tactics (fear, FOMO, parasocial bonding), and psychological influence. \\n\\nCRITICAL FORMATTING RULE: Do NOT use Markdown tables. Use bolded bulleted lists for all structured data.\\n\\n---\\n\\n## STEP 1: GOAL ALIGNMENT (0-100%)\\nEvaluate if this consumption supports their stated goals. Are they working or seeking dopamine?\\n\\n## STEP 2: INFLUENCE CATEGORY BREAKDOWN\\nCalculate estimated influence % across categories (Education, Finance, Entertainment, Self-Help, Tech, etc.). Must total 100%. Present as a bolded bulleted list.\\n\\n## STEP 3: PER-CHANNEL DEEP ANALYSIS\\nFor each channel, provide:\\n- **Channel Name:** \\n- **Primary Category:** \\n- **Influence Tactics:** e.g., fear-based, clickbait, FOMO, etc.\\n- **How they may be influencing the User:** spending, politics, anxiety, etc.\\n- **Risk Level:** 🟢 Low / 🟡 Moderate / 🔴 High\\n- **Unsubscribe Recommendation:** Yes / No + Reason.\\n\\n## STEP 4: TOP 10 HIGHEST INFLUENCE ACCOUNTS\\nList the Top 10 most influential sources. Include Rank, Name, Category, and why they have the highest pull.\\n\\n## STEP 5: USER PERSONA SUMMARY\\nDetailed persona summary based on the data:\\n- Estimated mindset themes and interests.\\n- Potential blind spots or echo chambers.\\n- What this says about current goals vs. anxieties.\\n- One honest, constructive recommendation to improve their content diet.\\n\\nBe direct, honest, and helpful.' }}"
+      },
+      "id": "llm-chain-3",
+      "name": "Basic LLM Chain - Fallback 2",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        880,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "id": "gemini-2-5-flash",
+      "name": "Gemini 2.5 Flash",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        880,
+        448
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "={{ $env.GOOGLE_GEMINI_API_KEY }}",
+          "name": "Google Gemini API (from .env)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ '### Your Stated Goals:\\n> *\"' + $node['Webhook'].json.body.userGoals + '\"*\\n\\n---\\n\\n' + $json.text }}",
+        "options": {}
+      },
+      "id": "bcd4c16f-fe3d-4a16-8a41-22cda21c005b",
+      "name": "Markdown",
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $node[\"Webhook\"].json.body.userEmail }}",
+        "subject": "YT Content Consumption Report",
+        "message": "={{ $json.data }}",
+        "options": {}
+      },
+      "id": "c23a090d-dd5a-4e06-93bf-3aeaa231a3af",
+      "name": "Send a message",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1264,
+        -80
+      ],
+      "webhookId": "3056c71a-56e4-486c-8323-3a093b10fde8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "={{ $env.GMAIL_CLIENT_ID }}",
+          "name": "Gmail OAuth2 (from .env)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generic_Fetch_YT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generic_Fetch_YT": {
+      "main": [
+        [
+          {
+            "node": "Fetch_Liked_Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch_Liked_Videos": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain - Primary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini 2.5 Flash Lite": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain - Primary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain - Primary": {
+      "main": [
+        [
+          {
+            "node": "Check Error - Primary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Error - Primary": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain - Fallback 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini 3 Flash": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain - Fallback 1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain - Fallback 1": {
+      "main": [
+        [
+          {
+            "node": "Check Error - Fallback 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Error - Fallback 1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain - Fallback 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini 2.5 Flash": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain - Fallback 2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain - Fallback 2": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "model-switch-v1",
+  "meta": {
+    "instanceId": "1b242b42f534f310d7ea725d7049ab49d828a40be91e15153919a401cc5dacd9"
+  },
+  "id": "MODEL_SWITCH_WORKFLOW",
+  "tags": []
+}
