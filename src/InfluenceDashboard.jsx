@@ -6,6 +6,7 @@ const InfluenceDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [userGoals, setUserGoals] = useState('');
+  const [showWelcomePopup, setShowWelcomePopup] = useState(true);
 
   // Fetch n8n webhook URL from environment variables
   const n8nWebhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
@@ -54,6 +55,41 @@ const InfluenceDashboard = () => {
 
   return (
     <div style={styles.container}>
+      {/* Welcome Popup Modal */}
+      {showWelcomePopup && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <h2 style={styles.modalTitle}>⚠️ Important: Google Sign-In Instructions</h2>
+            <div style={styles.modalBody}>
+              <p style={styles.modalText}>
+                When you click "Connect YouTube & Analyze", you'll see a Google sign-in popup with a safety warning. 
+                <strong> This is normal!</strong>
+              </p>
+              <div style={styles.instructionBox}>
+                <h3 style={styles.instructionTitle}>Follow these steps:</h3>
+                <ol style={styles.instructionList}>
+                  <li>Google will show a warning screen saying the app is unverified</li>
+                  <li>Look for the small <strong>"Advanced"</strong> link at the bottom</li>
+                  <li>Click <strong>"Advanced"</strong></li>
+                  <li>Click <strong>"Go to ABOVE_INFLUENCE (unsafe)"</strong></li>
+                  <li>Grant the requested permissions (read-only YouTube access)</li>
+                </ol>
+              </div>
+              <p style={styles.modalNote}>
+                💡 <strong>Why this warning?</strong> The app is in development mode and not yet verified by Google. 
+                Your data is safe - we only request read-only access and never store your information.
+              </p>
+            </div>
+            <button 
+              style={styles.modalButton}
+              onClick={() => setShowWelcomePopup(false)}
+            >
+              Got it! Let's Start
+            </button>
+          </div>
+        </div>
+      )}
+
       <div style={styles.card}>
         <div style={styles.header}>
           <h1 style={styles.title}>ABOVE_INFLUENCE</h1>
@@ -143,6 +179,91 @@ const InfluenceDashboard = () => {
 
 // --- STYLES ---
 const styles = {
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    padding: '1rem',
+    boxSizing: 'border-box',
+  },
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: '16px',
+    padding: '2rem',
+    maxWidth: '600px',
+    width: '100%',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+    border: '2px solid #3b82f6',
+  },
+  modalTitle: {
+    margin: '0 0 1.5rem 0',
+    color: '#ea580c',
+    fontSize: '1.5rem',
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  modalBody: {
+    textAlign: 'left',
+  },
+  modalText: {
+    color: '#475569',
+    fontSize: '1rem',
+    lineHeight: '1.7',
+    marginBottom: '1.25rem',
+  },
+  instructionBox: {
+    backgroundColor: '#eff6ff',
+    border: '2px solid #3b82f6',
+    borderRadius: '8px',
+    padding: '1.25rem',
+    marginBottom: '1.25rem',
+  },
+  instructionTitle: {
+    margin: '0 0 1rem 0',
+    color: '#1e40af',
+    fontSize: '1.1rem',
+    fontWeight: '600',
+  },
+  instructionList: {
+    margin: '0',
+    paddingLeft: '1.5rem',
+    color: '#334155',
+    fontSize: '0.95rem',
+    lineHeight: '1.8',
+  },
+  modalNote: {
+    backgroundColor: '#fef3c7',
+    border: '1px solid #fde047',
+    borderRadius: '8px',
+    padding: '1rem',
+    color: '#475569',
+    fontSize: '0.9rem',
+    lineHeight: '1.6',
+    margin: '0',
+  },
+  modalButton: {
+    backgroundColor: '#3b82f6',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '1rem 2rem',
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    width: '100%',
+    marginTop: '1.5rem',
+    transition: 'background-color 0.2s ease',
+    boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)',
+  },
   container: {
     minHeight: '100vh',
     width: '100vw',
