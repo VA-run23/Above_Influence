@@ -8,6 +8,7 @@ const InfluenceDashboard = () => {
   const [userGoals, setUserGoals] = useState('');
   const [showWorkflowPopup, setShowWorkflowPopup] = useState(true);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   // Fetch n8n webhook URL from environment variables
   const n8nWebhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
@@ -58,7 +59,12 @@ const InfluenceDashboard = () => {
     <div style={styles.container}>
       {/* Workflow Diagram Popup - Shows First */}
       {showWorkflowPopup && (
-        <div style={styles.modalOverlay}>
+        <div style={styles.modalOverlay} onClick={(e) => {
+          // Close if clicking the overlay background
+          if (e.target === e.currentTarget) {
+            setShowWorkflowPopup(false);
+          }
+        }}>
           <div style={styles.workflowModalContent}>
             <button 
               style={styles.closeButton}
@@ -67,35 +73,56 @@ const InfluenceDashboard = () => {
             >
               ✕
             </button>
-            <h2 style={styles.workflowModalTitle}>🚧 Service Currently Unavailable</h2>
+            <h2 style={styles.workflowModalTitle}>🚧 Service Unavailable</h2>
             <div style={styles.modalBody}>
-              <p style={styles.modalText}>
-                This app is not functional due to the expiration of the 14-day free tier n8n account (expired March 12, 2026).
+              <p style={styles.compactText}>
+                Free tier n8n account expired (March 12, 2026).
               </p>
               
               <div style={styles.workflowImageBox}>
-                <h3 style={styles.instructionTitle}>n8n Workflow Architecture:</h3>
-                <img 
-                  src="/WorkFlowDiagram1.jpg" 
-                  alt="n8n Workflow Diagram" 
-                  style={styles.workflowImage}
-                />
+                <h3 style={styles.compactTitle}>Workflow Architecture:</h3>
+                {!imageError ? (
+                  <img 
+                    src="/WorkFlowDiagram1.jpg" 
+                    alt="n8n Workflow Diagram" 
+                    style={styles.workflowImage}
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <p style={styles.smallText}>
+                    View on{' '}
+                    <a 
+                      href="https://github.com/VA-run23/Above_Influence/tree/main/n8n_WORKFLOW" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ color: '#3b82f6', textDecoration: 'underline' }}
+                    >
+                      GitHub
+                    </a>
+                  </p>
+                )}
               </div>
 
-              <div style={styles.instructionBox}>
-                <h3 style={styles.instructionTitle}>Want to Run This Yourself?</h3>
+              <div style={styles.compactInstructionBox}>
                 <p style={styles.smallText}>
-                  Get the workflow JSON and setup instructions from GitHub:
+                  Get workflow JSON from GitHub:
                 </p>
                 <a 
                   href="https://github.com/VA-run23/Above_Influence/tree/main/n8n_WORKFLOW" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  style={styles.githubButton}
+                  style={styles.compactGithubButton}
                 >
-                  📂 View on GitHub
+                  📂 GitHub
                 </a>
               </div>
+              
+              <button 
+                style={styles.skipButton}
+                onClick={() => setShowWorkflowPopup(false)}
+              >
+                Continue
+              </button>
             </div>
           </div>
         </div>
@@ -173,6 +200,23 @@ const InfluenceDashboard = () => {
 
         <div style={styles.infoSection}>
           <div style={styles.infoBox}>
+            <h3 style={styles.infoTitle}>🔧 How It Works - Workflow Architecture</h3>
+            <p style={styles.infoText}>
+              This application uses an intelligent n8n workflow with 13 interconnected nodes and a 3-tier AI model fallback system for maximum reliability:
+            </p>
+            <div style={styles.workflowMainImageBox}>
+              <img 
+                src="/WorkFlowDiagram1.jpg" 
+                alt="n8n Workflow Architecture Diagram" 
+                style={styles.workflowMainImage}
+              />
+              <p style={styles.imageCaption}>
+                Complete workflow: Webhook → YouTube API → AI Analysis (3 fallback models) → Email Report
+              </p>
+            </div>
+          </div>
+
+          <div style={styles.infoBox}>
             <h3 style={styles.infoTitle}>🔒 Privacy & Security</h3>
             <p style={styles.infoText}>
               • Your data is <strong>never stored</strong> in any database<br/>
@@ -231,19 +275,20 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1000,
+    zIndex: 9999,
     padding: '1rem',
     boxSizing: 'border-box',
+    overflowY: 'auto',
   },
   workflowModalContent: {
     backgroundColor: '#ffffff',
     borderRadius: '16px',
-    padding: '2rem',
-    maxWidth: '800px',
+    padding: '1.5rem',
+    maxWidth: '700px',
     width: '100%',
     maxHeight: '90vh',
     overflowY: 'auto',
@@ -270,19 +315,66 @@ const styles = {
     fontWeight: '400',
     lineHeight: '1',
   },
+  skipButton: {
+    backgroundColor: '#3b82f6',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '0.75rem 1.25rem',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    width: '100%',
+    marginTop: '0.75rem',
+    transition: 'background-color 0.2s ease',
+    boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)',
+  },
   workflowModalTitle: {
-    margin: '0 0 1.5rem 0',
+    margin: '0 0 0.75rem 0',
     color: '#dc2626',
-    fontSize: '1.6rem',
+    fontSize: '1.3rem',
     fontWeight: '700',
     textAlign: 'center',
   },
+  compactText: {
+    color: '#475569',
+    fontSize: '0.875rem',
+    lineHeight: '1.5',
+    marginBottom: '0.75rem',
+    textAlign: 'center',
+  },
+  compactTitle: {
+    margin: '0 0 0.5rem 0',
+    color: '#1e40af',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+  },
+  compactInstructionBox: {
+    backgroundColor: '#eff6ff',
+    border: '1px solid #3b82f6',
+    borderRadius: '6px',
+    padding: '0.75rem',
+    marginBottom: '0.75rem',
+    textAlign: 'center',
+  },
+  compactGithubButton: {
+    display: 'inline-block',
+    backgroundColor: '#3b82f6',
+    color: '#ffffff',
+    padding: '0.5rem 1rem',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    fontWeight: '600',
+    fontSize: '0.875rem',
+    marginTop: '0.5rem',
+    transition: 'background-color 0.2s ease',
+  },
   workflowImageBox: {
     backgroundColor: '#f8fafc',
-    border: '2px solid #e2e8f0',
+    border: '1px solid #e2e8f0',
     borderRadius: '8px',
-    padding: '1.25rem',
-    marginBottom: '1.25rem',
+    padding: '0.75rem',
+    marginBottom: '0.75rem',
     textAlign: 'center',
   },
   workflowImage: {
@@ -290,7 +382,28 @@ const styles = {
     height: 'auto',
     borderRadius: '8px',
     border: '1px solid #cbd5e1',
+    marginTop: '0.5rem',
+  },
+  workflowMainImageBox: {
+    backgroundColor: '#f8fafc',
+    border: '2px solid #e2e8f0',
+    borderRadius: '8px',
+    padding: '1rem',
     marginTop: '1rem',
+    textAlign: 'center',
+  },
+  workflowMainImage: {
+    width: '100%',
+    height: 'auto',
+    borderRadius: '8px',
+    border: '1px solid #cbd5e1',
+  },
+  imageCaption: {
+    fontSize: '0.8rem',
+    color: '#64748b',
+    marginTop: '0.75rem',
+    fontStyle: 'italic',
+    lineHeight: '1.4',
   },
   githubButton: {
     display: 'inline-block',
