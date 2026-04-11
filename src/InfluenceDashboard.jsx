@@ -6,9 +6,6 @@ const InfluenceDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [userGoals, setUserGoals] = useState('');
-  const [showWorkflowPopup, setShowWorkflowPopup] = useState(true);
-  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
-  const [imageError, setImageError] = useState(false);
 
   // Fetch n8n webhook URL from environment variables
   const n8nWebhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
@@ -20,6 +17,11 @@ const InfluenceDashboard = () => {
   const handleGoogleLogin = useGoogleLogin({
     scope: 'https://www.googleapis.com/auth/youtube.readonly email',
     onSuccess: async (tokenResponse) => {
+      setStatusMessage('⚠️ Service Unavailable: The free trial period has ended. This was a demo project built in 8 hours during a workshop. Check out the GitHub repository to learn how it was built and run it yourself!');
+      return;
+
+      // Original code (disabled)
+      /*
       setIsLoading(true);
       setStatusMessage('Authenticating securely...');
 
@@ -48,6 +50,7 @@ const InfluenceDashboard = () => {
       } finally {
         setIsLoading(false);
       }
+      */
     },
     onError: (error) => {
       console.error('Login Failed:', error);
@@ -57,120 +60,25 @@ const InfluenceDashboard = () => {
 
   return (
     <div style={styles.container}>
-      {/* Workflow Diagram Popup - Shows First */}
-      {showWorkflowPopup && (
-        <div style={styles.modalOverlay} onClick={(e) => {
-          // Close if clicking the overlay background
-          if (e.target === e.currentTarget) {
-            setShowWorkflowPopup(false);
-          }
-        }}>
-          <div style={styles.workflowModalContent}>
-            <button 
-              style={styles.closeButton}
-              onClick={() => setShowWorkflowPopup(false)}
-              aria-label="Close"
-            >
-              ✕
-            </button>
-            <h2 style={styles.workflowModalTitle}>🚧 Service Unavailable</h2>
-            <div style={styles.modalBody}>
-              <p style={styles.compactText}>
-                Free tier n8n account expired (March 12, 2026).
-              </p>
-              
-              <div style={styles.workflowImageBox}>
-                <h3 style={styles.compactTitle}>Workflow Architecture:</h3>
-                {!imageError ? (
-                  <img 
-                    src="/WorkFlowDiagram1.jpg" 
-                    alt="n8n Workflow Diagram" 
-                    style={styles.workflowImage}
-                    onError={() => setImageError(true)}
-                  />
-                ) : (
-                  <p style={styles.smallText}>
-                    View on{' '}
-                    <a 
-                      href="https://github.com/VA-run23/Above_Influence/tree/main/n8n_WORKFLOW" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      style={{ color: '#3b82f6', textDecoration: 'underline' }}
-                    >
-                      GitHub
-                    </a>
-                  </p>
-                )}
-              </div>
-
-              <div style={styles.compactInstructionBox}>
-                <p style={styles.smallText}>
-                  Get workflow JSON from GitHub:
-                </p>
-                <a 
-                  href="https://github.com/VA-run23/Above_Influence/tree/main/n8n_WORKFLOW" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={styles.compactGithubButton}
-                >
-                  📂 GitHub
-                </a>
-              </div>
-              
-              <button 
-                style={styles.skipButton}
-                onClick={() => setShowWorkflowPopup(false)}
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Welcome Popup Modal - Shows Second */}
-      {showWelcomePopup && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <h2 style={styles.modalTitle}>⚠️ Important: Google Sign-In Instructions</h2>
-            <div style={styles.modalBody}>
-              <p style={styles.modalText}>
-                When you click "Connect YouTube & Analyze", you'll see a Google sign-in popup with a safety warning. 
-                <strong> This is normal!</strong>
-              </p>
-              <div style={styles.instructionBox}>
-                <h3 style={styles.instructionTitle}>Follow these steps:</h3>
-                <ol style={styles.instructionList}>
-                  <li>Google will show a warning screen saying the app is unverified</li>
-                  <li>Look for the small <strong>"Advanced"</strong> link at the bottom</li>
-                  <li>Click <strong>"Advanced"</strong></li>
-                  <li>Click <strong>"Go to ABOVE_INFLUENCE (unsafe)"</strong></li>
-                  <li>Grant the requested permissions (read-only YouTube access)</li>
-                </ol>
-              </div>
-              <p style={styles.modalNote}>
-                💡 <strong>Why this warning?</strong> The app is in development mode and not yet verified by Google. 
-                Your data is safe - we only request read-only access and never store your information.
-              </p>
-            </div>
-            <button 
-              style={styles.modalButton}
-              onClick={() => setShowWelcomePopup(false)}
-            >
-              Got it! Let's Start
-            </button>
-          </div>
-        </div>
-      )}
-
       <div style={styles.card}>
         <div style={styles.header}>
           <h1 style={styles.title}>ABOVE_INFLUENCE</h1>
           <p style={styles.subtitle}>Namaste 🙏</p>
         </div>
+
+        {/* Service Status Banner */}
+        <div style={styles.statusBanner}>
+          <h3 style={styles.statusBannerTitle}>🚧 Demo Project - Service Currently Offline</h3>
+          <p style={styles.statusBannerText}>
+            This application was built in <strong>8 hours</strong> as part of a one-week workshop to demonstrate rapid development using modern tools. The free trial period for the backend service (n8n) has ended, so the analysis feature is currently unavailable.
+          </p>
+          <p style={styles.statusBannerText}>
+            <strong>Good news:</strong> You can still explore how it works and even run it yourself! Check out the workflow diagram below and visit our GitHub repository for the complete setup guide.
+          </p>
+        </div>
         
         <p style={styles.description}>
-          We spend countless hours watching YouTube, often unaware of how the creators we subscribe to subtly shape our mindset, beliefs, and decisions. Are you consuming content that aligns with your goals, or are you being influenced without realizing it? Let's find out if your content diet actually supports your life goals.
+          We spend countless hours watching YouTube, often unaware of how the creators we subscribe to subtly shape our mindset, beliefs, and decisions. Are you consuming content that aligns with your goals, or are you being influenced without realizing it? This tool was designed to help you find out if your content diet actually supports your life goals.
         </p>
 
         <div style={styles.inputGroup}>
@@ -185,11 +93,13 @@ const InfluenceDashboard = () => {
         </div>
 
         <button 
-          onClick={() => handleGoogleLogin()} 
-          disabled={isLoading}
-          style={isLoading ? { ...styles.button, ...styles.buttonDisabled } : styles.button}
+          onClick={() => {
+            setStatusMessage('⚠️ Service Unavailable: The free trial period has ended (March 12, 2026). This was a demo project built in 8 hours during a workshop. Check out the GitHub repository to learn how it was built and run it yourself!');
+          }} 
+          disabled={false}
+          style={styles.button}
         >
-          {isLoading ? 'Processing Request...' : 'Connect YouTube & Analyze'}
+          Connect YouTube & Analyze (Demo Only)
         </button>
 
         {statusMessage && (
@@ -200,53 +110,83 @@ const InfluenceDashboard = () => {
 
         <div style={styles.infoSection}>
           <div style={styles.infoBox}>
-            <h3 style={styles.infoTitle}>🔧 How It Works - Workflow Architecture</h3>
+            <h3 style={styles.infoTitle}>🔧 How It Works - The Technology Behind It</h3>
             <p style={styles.infoText}>
-              This application uses an intelligent n8n workflow with 13 interconnected nodes and a 3-tier AI model fallback system for maximum reliability:
+              This app connects to your YouTube account, looks at what channels you follow and what videos you've liked, then uses AI to analyze whether your viewing habits match your personal goals. Think of it as a health check for your content diet!
+            </p>
+            <p style={styles.infoText}>
+              <strong>The Process (in simple terms):</strong><br/>
+              1️⃣ You tell us your goals (like "get fit" or "learn coding")<br/>
+              2️⃣ We check your YouTube subscriptions and liked videos<br/>
+              3️⃣ AI analyzes if the content helps or distracts from your goals<br/>
+              4️⃣ You get a detailed report via email with recommendations
             </p>
             <div style={styles.workflowMainImageBox}>
+              <h4 style={styles.workflowImageTitle}>Technical Workflow Diagram:</h4>
               <img 
                 src="/WorkFlowDiagram1.jpg" 
-                alt="n8n Workflow Architecture Diagram" 
+                alt="n8n Workflow Architecture Diagram showing 13 connected nodes" 
                 style={styles.workflowMainImage}
               />
               <p style={styles.imageCaption}>
-                Complete workflow: Webhook → YouTube API → AI Analysis (3 fallback models) → Email Report
+                <strong>For developers:</strong> This workflow uses n8n automation with 13 nodes: Webhook → YouTube API calls → 3-tier AI fallback system (Gemini models) → Markdown formatting → Gmail delivery. The intelligent fallback ensures 99%+ success rate even with API rate limits.
+              </p>
+            </div>
+            <div style={styles.githubCallout}>
+              <p style={styles.githubCalloutText}>
+                💡 <strong>Want to run this yourself or learn how it was built?</strong>
+              </p>
+              <a 
+                href="https://github.com/VA-run23/Above_Influence" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={styles.githubCalloutButton}
+              >
+                📂 View Complete Guide on GitHub
+              </a>
+              <p style={styles.smallText}>
+                Includes: Setup instructions, workflow JSON files, API configuration guide, and troubleshooting tips
               </p>
             </div>
           </div>
 
           <div style={styles.infoBox}>
-            <h3 style={styles.infoTitle}>🔒 Privacy & Security</h3>
+            <h3 style={styles.infoTitle}>🔒 Privacy & Security (Your Data is Safe)</h3>
             <p style={styles.infoText}>
-              • Your data is <strong>never stored</strong> in any database<br/>
-              • Analysis happens in real-time and is immediately discarded<br/>
-              • Report is sent directly to <strong>your email only</strong><br/>
-              • We only request <strong>read-only</strong> access to your YouTube data<br/>
-              • <strong>Important:</strong> Since the report is sent from our Gmail account, we can technically access it through our sent emails. However, we respect your privacy and do not read individual reports.
-            </p>
-          </div>
-
-          <div style={styles.infoBox}>
-            <h3 style={styles.infoTitle}>📋 How to Grant Access</h3>
-            <p style={styles.infoText}>
-              When the Google sign-in popup appears:<br/>
-              1. You may see a warning screen<br/>
-              2. Click the small <strong>"Advanced"</strong> button at the bottom<br/>
-              3. Click <strong>"Go to ABOVE_INFLUENCE (unsafe)"</strong><br/>
-              4. Grant the requested permissions<br/>
-              <em style={styles.note}>This warning appears because the app is in development mode, not because it's actually unsafe.</em>
+              • <strong>Nothing is saved:</strong> Your data is never stored in any database<br/>
+              • <strong>Real-time only:</strong> Analysis happens instantly and is immediately deleted<br/>
+              • <strong>Email only:</strong> Report goes directly to your inbox<br/>
+              • <strong>Read-only access:</strong> We can only view your subscriptions and likes, not modify anything<br/>
+              • <strong>Transparency:</strong> Since reports are sent from our Gmail, we could technically see them in sent emails, but we respect your privacy and don't read them
             </p>
           </div>
 
           <div style={styles.warningBox}>
-            <h3 style={styles.warningTitle}>⚠️ Service Limitations</h3>
+            <h3 style={styles.warningTitle}>⚠️ Current Status & Limitations</h3>
             <p style={styles.warningText}>
-              • This service uses a <strong>free-tier n8n account</strong> (expires March 12, 2026)<br/>
-              • Google Gemini AI has <strong>rate limits</strong> - usage is limited<br/>
-              • If you don't receive a report immediately, please <strong>try again later</strong><br/>
-              • Peak usage times may cause delays<br/>
-              • <strong>Analysis Scope:</strong> The report analyzes your recent subscriptions and liked videos (latest 30 entries each). It may not capture your complete viewing history, but provides insights into your recent content consumption patterns and their relevance to your stated goals.
+              • <strong>Service Offline:</strong> The free trial for n8n (the automation tool) expired on March 12, 2026<br/>
+              • <strong>Demo Project:</strong> This was built in 8 hours during a workshop to show what's possible with modern tools<br/>
+              • <strong>You Can Still Use It:</strong> Follow the GitHub guide to set up your own instance with your API keys<br/>
+              • <strong>Learning Resource:</strong> Perfect for understanding how to build AI-powered apps quickly
+            </p>
+          </div>
+
+          <div style={styles.infoBox}>
+            <h3 style={styles.infoTitle}>🎓 Project Background</h3>
+            <p style={styles.infoText}>
+              This project was created during a one-week skill development workshop (Feb 23-28, 2026). The idea had been sitting around for months because it seemed too complex - requiring weeks of coding, training AI models, and building infrastructure.
+            </p>
+            <p style={styles.infoText}>
+              <strong>Then we discovered n8n</strong> (a no-code automation tool) and everything changed. What seemed impossible became reality in just 8 hours:
+            </p>
+            <p style={styles.infoText}>
+              ✅ 4 hours: Initial build<br/>
+              ✅ 4 hours: Improvements and refinements<br/>
+              ✅ Zero prior n8n experience<br/>
+              ✅ Production-ready with intelligent error handling
+            </p>
+            <p style={styles.infoText}>
+              <strong>The lesson:</strong> Modern tools can turn months-old ideas into working products in hours. Don't let technical complexity kill good ideas!
             </p>
           </div>
         </div>
@@ -392,6 +332,12 @@ const styles = {
     marginTop: '1rem',
     textAlign: 'center',
   },
+  workflowImageTitle: {
+    margin: '0 0 0.75rem 0',
+    color: '#334155',
+    fontSize: '1rem',
+    fontWeight: '600',
+  },
   workflowMainImage: {
     width: '100%',
     height: 'auto',
@@ -399,11 +345,38 @@ const styles = {
     border: '1px solid #cbd5e1',
   },
   imageCaption: {
-    fontSize: '0.8rem',
+    fontSize: '0.85rem',
     color: '#64748b',
     marginTop: '0.75rem',
     fontStyle: 'italic',
-    lineHeight: '1.4',
+    lineHeight: '1.5',
+    textAlign: 'left',
+  },
+  githubCallout: {
+    backgroundColor: '#eff6ff',
+    border: '2px solid #3b82f6',
+    borderRadius: '8px',
+    padding: '1.25rem',
+    marginTop: '1.25rem',
+    textAlign: 'center',
+  },
+  githubCalloutText: {
+    margin: '0 0 1rem 0',
+    color: '#1e40af',
+    fontSize: '1rem',
+    fontWeight: '600',
+  },
+  githubCalloutButton: {
+    display: 'inline-block',
+    backgroundColor: '#3b82f6',
+    color: '#ffffff',
+    padding: '0.875rem 1.75rem',
+    borderRadius: '8px',
+    textDecoration: 'none',
+    fontWeight: '600',
+    fontSize: '1rem',
+    transition: 'background-color 0.2s ease',
+    boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)',
   },
   githubButton: {
     display: 'inline-block',
@@ -535,6 +508,26 @@ const styles = {
     fontSize: '1.1rem',
     fontWeight: '500',
   },
+  statusBanner: {
+    background: 'linear-gradient(135deg, #fef3c7 0%, #ffedd5 100%)',
+    border: '2px solid #f59e0b',
+    borderRadius: '12px',
+    padding: '1.5rem',
+    marginBottom: '1.5rem',
+    textAlign: 'left',
+  },
+  statusBannerTitle: {
+    margin: '0 0 0.75rem 0',
+    color: '#ea580c',
+    fontSize: '1.15rem',
+    fontWeight: '700',
+  },
+  statusBannerText: {
+    margin: '0 0 0.75rem 0',
+    color: '#475569',
+    fontSize: '0.95rem',
+    lineHeight: '1.7',
+  },
   description: {
     color: '#475569',
     fontSize: '1rem',
@@ -568,7 +561,7 @@ const styles = {
     outline: 'none',
   },
   button: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#94a3b8',
     color: '#ffffff',
     border: 'none',
     borderRadius: '8px',
@@ -578,7 +571,7 @@ const styles = {
     cursor: 'pointer',
     width: '100%',
     transition: 'background-color 0.2s ease',
-    boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3), 0 2px 4px -1px rgba(59, 130, 246, 0.2)',
+    boxShadow: '0 4px 6px -1px rgba(148, 163, 184, 0.3), 0 2px 4px -1px rgba(148, 163, 184, 0.2)',
   },
   buttonDisabled: {
     backgroundColor: '#93c5fd',
@@ -587,16 +580,17 @@ const styles = {
   },
   statusBox: {
     marginTop: '1.5rem',
-    padding: '1.125rem',
-    background: 'linear-gradient(135deg, #fff7ed 0%, #eff6ff 100%)',
+    padding: '1.25rem',
+    background: 'linear-gradient(135deg, #fef3c7 0%, #ffedd5 100%)',
     borderRadius: '8px',
-    border: '1px solid #fed7aa',
+    border: '2px solid #f59e0b',
   },
   statusText: {
     margin: '0',
     color: '#ea580c',
-    fontSize: '0.95rem',
-    fontWeight: '500',
+    fontSize: '1rem',
+    fontWeight: '600',
+    lineHeight: '1.6',
   },
   infoSection: {
     marginTop: '2rem',
