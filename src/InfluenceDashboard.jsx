@@ -6,7 +6,8 @@ const InfluenceDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [userGoals, setUserGoals] = useState('');
-  const [showWelcomePopup, setShowWelcomePopup] = useState(true);
+  const [showWorkflowPopup, setShowWorkflowPopup] = useState(true);
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
 
   // Fetch n8n webhook URL from environment variables
   const n8nWebhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
@@ -55,7 +56,52 @@ const InfluenceDashboard = () => {
 
   return (
     <div style={styles.container}>
-      {/* Welcome Popup Modal */}
+      {/* Workflow Diagram Popup - Shows First */}
+      {showWorkflowPopup && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.workflowModalContent}>
+            <button 
+              style={styles.closeButton}
+              onClick={() => setShowWorkflowPopup(false)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            <h2 style={styles.workflowModalTitle}>🚧 Service Currently Unavailable</h2>
+            <div style={styles.modalBody}>
+              <p style={styles.modalText}>
+                This app is not functional due to the expiration of the 14-day free tier n8n account (expired March 12, 2026).
+              </p>
+              
+              <div style={styles.workflowImageBox}>
+                <h3 style={styles.instructionTitle}>n8n Workflow Architecture:</h3>
+                <img 
+                  src="/WorkFlowDiagram1.jpg" 
+                  alt="n8n Workflow Diagram" 
+                  style={styles.workflowImage}
+                />
+              </div>
+
+              <div style={styles.instructionBox}>
+                <h3 style={styles.instructionTitle}>Want to Run This Yourself?</h3>
+                <p style={styles.smallText}>
+                  Get the workflow JSON and setup instructions from GitHub:
+                </p>
+                <a 
+                  href="https://github.com/VA-run23/Above_Influence/tree/main/n8n_WORKFLOW" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={styles.githubButton}
+                >
+                  📂 View on GitHub
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Welcome Popup Modal - Shows Second */}
       {showWelcomePopup && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
@@ -192,6 +238,79 @@ const styles = {
     zIndex: 1000,
     padding: '1rem',
     boxSizing: 'border-box',
+  },
+  workflowModalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: '16px',
+    padding: '2rem',
+    maxWidth: '800px',
+    width: '100%',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+    border: '3px solid #ef4444',
+    position: 'relative',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: '1rem',
+    right: '1rem',
+    backgroundColor: 'transparent',
+    border: 'none',
+    fontSize: '1.5rem',
+    color: '#64748b',
+    cursor: 'pointer',
+    width: '2rem',
+    height: '2rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '4px',
+    transition: 'all 0.2s ease',
+    fontWeight: '400',
+    lineHeight: '1',
+  },
+  workflowModalTitle: {
+    margin: '0 0 1.5rem 0',
+    color: '#dc2626',
+    fontSize: '1.6rem',
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  workflowImageBox: {
+    backgroundColor: '#f8fafc',
+    border: '2px solid #e2e8f0',
+    borderRadius: '8px',
+    padding: '1.25rem',
+    marginBottom: '1.25rem',
+    textAlign: 'center',
+  },
+  workflowImage: {
+    width: '100%',
+    height: 'auto',
+    borderRadius: '8px',
+    border: '1px solid #cbd5e1',
+    marginTop: '1rem',
+  },
+  githubButton: {
+    display: 'inline-block',
+    backgroundColor: '#3b82f6',
+    color: '#ffffff',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '8px',
+    textDecoration: 'none',
+    fontWeight: '600',
+    fontSize: '1rem',
+    marginTop: '0.75rem',
+    marginBottom: '0.75rem',
+    transition: 'background-color 0.2s ease',
+    boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)',
+  },
+  smallText: {
+    fontSize: '0.875rem',
+    color: '#64748b',
+    margin: '0.5rem 0 0 0',
+    lineHeight: '1.5',
   },
   modalContent: {
     backgroundColor: '#ffffff',
